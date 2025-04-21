@@ -1,12 +1,14 @@
 "use client"
 
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
+
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { MooseIcon } from "@/components/moose-icon"
-import { PlusIcon, FileTextIcon, FolderIcon, StarIcon, LogOut, Settings, User } from "lucide-react"
+import { PlusIcon, FileTextIcon, FolderIcon, StarIcon, LogOut, User } from "lucide-react"
 import { BackgroundCustomizer, type BackgroundSettings } from "@/components/background-customizer"
 import { CustomBackground } from "@/components/custom-background"
 import { useUser } from "@/contexts/user-context"
@@ -14,7 +16,6 @@ import { useDocument } from "@/contexts/document-context"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -135,12 +136,6 @@ export default function Dashboard() {
                     <Link href="/profile">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={logout}>

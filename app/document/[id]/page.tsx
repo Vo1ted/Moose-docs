@@ -133,7 +133,7 @@ export default function DocumentPage({ params }: { params: { id: string } }) {
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <MooseIcon className="h-6 w-6" />
+              <MooseIcon className="h-8 w-8" />
               <input
                 type="text"
                 value={title}
