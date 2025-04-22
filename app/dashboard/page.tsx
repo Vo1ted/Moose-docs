@@ -11,8 +11,7 @@ import { MooseIcon } from "@/components/moose-icon"
 import { PlusIcon, FileTextIcon, FolderIcon, StarIcon, LogOut, User } from "lucide-react"
 import { BackgroundCustomizer, type BackgroundSettings } from "@/components/background-customizer"
 import { CustomBackground } from "@/components/custom-background"
-import { useUser } from "@/contexts/user-context"
-import { useDocument } from "@/contexts/document-context"
+import { useStaticData } from "@/contexts/static-data-provider"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,8 +48,8 @@ const defaultBackgroundSettings: BackgroundSettings = {
 }
 
 export default function Dashboard() {
-  const { user, isAuthenticated, isLoading: userLoading, logout } = useUser()
-  const { documents } = useDocument()
+  const { currentUser: user, isAuthenticated, isLoading: userLoading, logout, data } = useStaticData()
+  const documents = data.documents
   const router = useRouter()
 
   const [backgroundSettings, setBackgroundSettings] = useState<BackgroundSettings>(defaultBackgroundSettings)

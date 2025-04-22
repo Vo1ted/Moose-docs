@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { MooseIcon } from "@/components/moose-icon"
-import { useUser } from "@/contexts/user-context"
+import { useStaticData } from "@/contexts/static-data-provider"
 import { Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
-  const { login } = useUser()
+  const { login } = useStaticData()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get("redirect") || "/dashboard"

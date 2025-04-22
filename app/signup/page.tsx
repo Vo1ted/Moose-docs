@@ -9,12 +9,39 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MooseIcon } from "@/components/moose-icon"
-import { useUser } from "@/contexts/user-context"
+import { useStaticData } from "@/contexts/static-data-provider"
 import { Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function SignupPage() {
-  const { signup } = useUser()
+  // For GitHub Pages, we'll implement a simplified signup
+  const { login, data, setCurrentUser } = useStaticData()
+
+  // Simple signup function that adds a new user to our static data
+  const signup = async (username: string, password: string, firstName?: string, lastName?: string) => {
+    // Check if username already exists
+    if (data.users.some((u) => u.username === username)) {
+      return false
+    }
+
+    // Create new user
+    const newUser = {
+      id: `user-${Date.now()}`,
+      username,
+      firstName: firstName || "",
+      lastName: lastName || "",
+      avatar: "/placeholder.svg?height=200&width=200",
+    }
+
+    // Add user to localStorage
+    const updatedUsers = [...data.users, newUser]
+    localStorage.setItem("mooseDocs.users", JSON.stringify(updatedUsers))
+
+    // Log in the new user
+    setCurrentUser(newUser)
+
+    return true
+  }
   const router = useRouter()
 
   const [username, setUsername] = useState("")

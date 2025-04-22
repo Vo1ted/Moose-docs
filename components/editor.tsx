@@ -4,7 +4,8 @@ import type React from "react"
 
 import { useEffect, useRef, useState } from "react"
 import { FontSelector } from "./font-selector"
-import { useDocument, type Comment } from "@/contexts/document-context"
+import { useStaticData } from "@/contexts/static-data-provider"
+import type { Comment } from "@/contexts/document-context"
 import { ActiveUsers } from "./active-users"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,7 +56,8 @@ const mockGoogleImages = [
 ]
 
 export function Editor() {
-  const { currentDocument, updateDocumentContent, updateDocumentTitle, currentUsers } = useDocument()
+  const { currentDocument, updateDocumentContent, updateDocumentTitle, data } = useStaticData()
+  const currentUsers = data.currentUsers
   const editorRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentFont, setCurrentFont] = useState("Roboto")

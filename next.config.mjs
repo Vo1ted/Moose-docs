@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standard Next.js configuration for Vercel
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,6 +10,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+  // No basePath or output: 'export' needed for Vercel
+  experimental: {
+    appDir: true,
+  },
+};
 
-export default nextConfig
+export default nextConfig;
