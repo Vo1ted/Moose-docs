@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -50,6 +50,10 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    // Any initialization that depends on client-side APIs should be here
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
