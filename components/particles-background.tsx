@@ -40,6 +40,7 @@ export function ParticlesBackground({
 }: ParticlesBackgroundProps) {
   const [currentColor, setCurrentColor] = useState(color)
   const [currentRainbowIndex, setCurrentRainbowIndex] = useState(0)
+  const [loaded, setLoaded] = useState(false)
 
   // For color cycling mode
   useEffect(() => {
@@ -63,6 +64,7 @@ export function ParticlesBackground({
 
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine)
+    setLoaded(true)
   }, [])
 
   // Determine color value based on color mode
@@ -77,6 +79,10 @@ export function ParticlesBackground({
       default:
         return color
     }
+  }
+
+  if (typeof window === "undefined") {
+    return null // Don't render on server
   }
 
   return (

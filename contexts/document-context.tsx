@@ -98,8 +98,11 @@ interface DocumentContextType {
 
 const DocumentContext = createContext<DocumentContextType | undefined>(undefined)
 
-// Mock documents
-const mockDocuments: DocumentMeta[] = [
+// Storage key for documents
+const DOCUMENTS_STORAGE_KEY = "mooseDocs.documents"
+
+// Default mock documents
+const defaultDocuments: DocumentMeta[] = [
   {
     id: "1",
     title: "Project Proposal",
@@ -241,9 +244,45 @@ const getRandomColor = () => {
 
 export function DocumentProvider({ children }: { children: ReactNode }) {
   const { user } = useUser()
-  const [documents, setDocuments] = useState<DocumentMeta[]>(mockDocuments)
+  const [documents, setDocuments] = useState<DocumentMeta[]>([])
   const [currentDocument, setCurrentDocument] = useState<DocumentMeta | null>(null)
   const [currentUsers, setCurrentUsers] = useState<{ id: string; username: string; color: string }[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Initialize documents from localStorage or defaults
+  useEffect(() => {
+    const initializeDocuments = () => {
+      try {
+        // Check if we're in a browser environment
+        if (typeof window === "undefined") {
+          setIsLoading(false)
+          return
+        }
+
+        const storedDocuments = localStorage.getItem(DOCUMENTS_STORAGE_KEY)
+        if (!storedDocuments) {
+          localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(defaultDocuments))
+          setDocuments(defaultDocuments)
+        } else {
+          setDocuments(JSON.parse(storedDocuments))
+        }
+      } catch (error) {
+        console.error("Failed to initialize documents:", error)
+        setDocuments(defaultDocuments)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    initializeDocuments()
+  }, [])
+
+  // Save documents when they change
+  useEffect(() => {
+    if (!isLoading && documents.length > 0) {
+      localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documents))
+    }
+  }, [documents, isLoading])
 
   // Simulate other users joining when a document is opened
   useEffect(() => {

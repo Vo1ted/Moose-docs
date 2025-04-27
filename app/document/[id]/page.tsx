@@ -9,22 +9,15 @@ import { MooseIcon } from "@/components/moose-icon"
 import { Editor } from "@/components/editor"
 import { Share2, Save, ChevronLeft, Star } from "lucide-react"
 import { ShareDialog, type SharedUser } from "@/components/share-dialog"
-import { useStaticData } from "@/contexts/static-data-provider"
+import { useDocument } from "@/contexts/document-context"
+import { useUser } from "@/contexts/user-context"
 import { useRouter } from "next/navigation"
 
 export default function DocumentPage({ params }: { params: { id: string } }) {
-  const {
-    currentUser: user,
-    isAuthenticated,
-    isLoading: userLoading,
-    data,
-    currentDocument,
-    setCurrentDocument,
-    updateDocumentTitle,
-    starDocument,
-    updateDocumentContent,
-  } = useStaticData()
-  const documents = data.documents
+  const { isAuthenticated, isLoading: userLoading, user } = useUser()
+
+  const { documents, currentDocument, setCurrentDocument, updateDocumentTitle, starDocument, updateDocumentContent } =
+    useDocument()
 
   const router = useRouter()
   const [title, setTitle] = useState("Untitled Document")

@@ -58,11 +58,11 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
     "zod": "^3.24.1",
+    "@vercel/blob": "latest",
+    "uuid": "latest",
     "react-tsparticles": "latest",
     "tsparticles": "latest",
-    "tsparticles-engine": "latest",
-    "@vercel/blob": "latest",
-    "uuid": "latest"
+    "tsparticles-engine": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
