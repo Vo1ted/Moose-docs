@@ -25,8 +25,14 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-// Mock user database for demo purposes
-const mockUsers: User[] = [
+// Storage keys
+const AUTH_TOKEN_KEY = "mooseDocs.authToken"
+const USER_STORAGE_KEY = "mooseDocs.user"
+const USERS_STORAGE_KEY = "mooseDocs.users"
+const PASSWORDS_STORAGE_KEY = "mooseDocs.passwords"
+
+// Initial default users
+const defaultUsers: User[] = [
   {
     id: "1",
     username: "johndoe",
@@ -43,53 +49,71 @@ const mockUsers: User[] = [
   },
 ]
 
-// Mock passwords (in a real app, these would be hashed and stored securely)
-const mockPasswords: Record<string, string> = {
+// Default passwords (in a real app, these would be hashed and stored securely)
+const defaultPasswords: Record<string, string> = {
   "1": "password123",
   "2": "password123",
 }
 
-// Auth token storage key
-const AUTH_TOKEN_KEY = "mooseDocs.authToken"
-const USER_STORAGE_KEY = "mooseDocs.user"
-
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [users, setUsers] = useState<User[]>([])
+  const [passwords, setPasswords] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
 
-  // Check for existing session on mount
+  // Initialize users and passwords from localStorage or defaults
   useEffect(() => {
-    const loadUserFromStorage = () => {
+    const initializeStorage = () => {
       try {
-        // First try to get the user directly from storage
-        const storedUser = localStorage.getItem(USER_STORAGE_KEY)
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser)
-          setUser(parsedUser)
+        // Check if we're in a browser environment
+        if (typeof window === "undefined") {
           setIsLoading(false)
           return
         }
 
-        // If no stored user, check for auth token
-        const token = localStorage.getItem(AUTH_TOKEN_KEY)
-        if (token) {
-          // In a real app, we would validate the token with the server
-          // For this demo, we'll just parse the stored user ID from the token
-          const userId = token.split(":")[0]
-          const foundUser = mockUsers.find((u) => u.id === userId)
+        // Initialize users
+        const storedUsers = localStorage.getItem(USERS_STORAGE_KEY)
+        if (!storedUsers) {
+          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(defaultUsers))
+          setUsers(defaultUsers)
+        } else {
+          setUsers(JSON.parse(storedUsers))
+        }
 
-          if (foundUser) {
-            setUser(foundUser)
-            // Also store the user object for direct access next time
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(foundUser))
-          } else {
-            // Invalid token, clear it
-            localStorage.removeItem(AUTH_TOKEN_KEY)
-            localStorage.removeItem(USER_STORAGE_KEY)
+        // Initialize passwords
+        const storedPasswords = localStorage.getItem(PASSWORDS_STORAGE_KEY)
+        if (!storedPasswords) {
+          localStorage.setItem(PASSWORDS_STORAGE_KEY, JSON.stringify(defaultPasswords))
+          setPasswords(defaultPasswords)
+        } else {
+          setPasswords(JSON.parse(storedPasswords))
+        }
+
+        // Check for existing session
+        const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        } else {
+          // Check for auth token
+          const token = localStorage.getItem(AUTH_TOKEN_KEY)
+          if (token) {
+            // In a real app, we would validate the token with the server
+            // For this demo, we'll just parse the stored user ID from the token
+            const userId = token.split(":")[0]
+            const foundUser = JSON.parse(storedUsers || "[]").find((u: User) => u.id === userId)
+
+            if (foundUser) {
+              setUser(foundUser)
+              localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(foundUser))
+            } else {
+              // Invalid token, clear it
+              localStorage.removeItem(AUTH_TOKEN_KEY)
+            }
           }
         }
       } catch (error) {
-        console.error("Failed to load user from storage:", error)
+        console.error("Failed to initialize user storage:", error)
+        // Reset storage in case of corruption
         localStorage.removeItem(AUTH_TOKEN_KEY)
         localStorage.removeItem(USER_STORAGE_KEY)
       } finally {
@@ -97,17 +121,30 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    loadUserFromStorage()
+    initializeStorage()
   }, [])
+
+  // Save users and passwords when they change
+  useEffect(() => {
+    if (users.length > 0) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users))
+    }
+  }, [users])
+
+  useEffect(() => {
+    if (Object.keys(passwords).length > 0) {
+      localStorage.setItem(PASSWORDS_STORAGE_KEY, JSON.stringify(passwords))
+    }
+  }, [passwords])
 
   const login = async (username: string, password: string, rememberMe = true): Promise<boolean> => {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Find user by username
-    const foundUser = mockUsers.find((u) => u.username === username)
+    const foundUser = users.find((u) => u.username.toLowerCase() === username.toLowerCase())
 
-    if (foundUser && mockPasswords[foundUser.id] === password) {
+    if (foundUser && passwords[foundUser.id] === password) {
       setUser(foundUser)
 
       // Always store the user object for persistence
@@ -136,23 +173,31 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // Check if username already exists
-    if (mockUsers.some((u) => u.username === username)) {
+    // Check if username already exists (case insensitive)
+    if (users.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
       return false
     }
 
-    // Create new user
+    // Create new user with a unique ID
+    const newUserId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
     const newUser: User = {
-      id: String(mockUsers.length + 1),
+      id: newUserId,
       username,
       firstName,
       lastName,
       avatar: "/placeholder.svg?height=200&width=200",
     }
 
-    // In a real app, we would save this to a database
-    mockUsers.push(newUser)
-    mockPasswords[newUser.id] = password
+    // Update users and passwords
+    const updatedUsers = [...users, newUser]
+    const updatedPasswords = { ...passwords, [newUserId]: password }
+
+    setUsers(updatedUsers)
+    setPasswords(updatedPasswords)
+
+    // Save to localStorage
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
+    localStorage.setItem(PASSWORDS_STORAGE_KEY, JSON.stringify(updatedPasswords))
 
     // Log in the new user
     setUser(newUser)
@@ -178,7 +223,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!query) return []
 
     // Search users by username, first name, or last name
-    return mockUsers.filter(
+    return users.filter(
       (u) =>
         u.username.toLowerCase().includes(query.toLowerCase()) ||
         (u.firstName && u.firstName.toLowerCase().includes(query.toLowerCase())) ||
@@ -192,20 +237,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     if (!user) return false
 
-    // Update user in mock database
+    // Update user in users array
     const updatedUser = { ...user, ...updates }
-    const userIndex = mockUsers.findIndex((u) => u.id === user.id)
+    const updatedUsers = users.map((u) => (u.id === user.id ? updatedUser : u))
 
-    if (userIndex !== -1) {
-      mockUsers[userIndex] = updatedUser
-      setUser(updatedUser)
+    setUsers(updatedUsers)
+    setUser(updatedUser)
 
-      // Update stored user
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser))
-      return true
-    }
+    // Update stored user
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser))
 
-    return false
+    return true
   }
 
   const updateAvatar = async (avatarUrl: string): Promise<boolean> => {
@@ -217,7 +260,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await new Promise((resolve) => setTimeout(resolve, 800))
 
     // Find user by username
-    const foundUser = mockUsers.find((u) => u.username === username)
+    const foundUser = users.find((u) => u.username.toLowerCase() === username.toLowerCase())
 
     if (!foundUser) {
       return false

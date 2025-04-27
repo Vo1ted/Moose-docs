@@ -2,8 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { StaticDataProvider } from "@/contexts/static-data-provider"
 import { UserProvider } from "@/contexts/user-context"
+import { DocumentProvider } from "@/contexts/document-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <UserProvider>
-          <StaticDataProvider>{children}</StaticDataProvider>
+          <DocumentProvider>{children}</DocumentProvider>
         </UserProvider>
       </body>
     </html>

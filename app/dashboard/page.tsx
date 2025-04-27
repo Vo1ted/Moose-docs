@@ -1,7 +1,5 @@
 "use client"
 
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -11,11 +9,13 @@ import { MooseIcon } from "@/components/moose-icon"
 import { PlusIcon, FileTextIcon, FolderIcon, StarIcon, LogOut, User } from "lucide-react"
 import { BackgroundCustomizer, type BackgroundSettings } from "@/components/background-customizer"
 import { CustomBackground } from "@/components/custom-background"
-import { useStaticData } from "@/contexts/static-data-provider"
+import { useUser } from "@/contexts/user-context"
+import { useDocument } from "@/contexts/document-context"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -48,8 +48,8 @@ const defaultBackgroundSettings: BackgroundSettings = {
 }
 
 export default function Dashboard() {
-  const { currentUser: user, isAuthenticated, isLoading: userLoading, logout, data } = useStaticData()
-  const documents = data.documents
+  const { user, isAuthenticated, isLoading: userLoading, logout } = useUser()
+  const { documents } = useDocument()
   const router = useRouter()
 
   const [backgroundSettings, setBackgroundSettings] = useState<BackgroundSettings>(defaultBackgroundSettings)
@@ -64,12 +64,14 @@ export default function Dashboard() {
 
   // Load saved background settings from localStorage on component mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem("mooseDocs.backgroundSettings")
-    if (savedSettings) {
-      try {
-        setBackgroundSettings(JSON.parse(savedSettings))
-      } catch (error) {
-        console.error("Failed to parse saved background settings:", error)
+    if (typeof window !== "undefined") {
+      const savedSettings = localStorage.getItem("mooseDocs.backgroundSettings")
+      if (savedSettings) {
+        try {
+          setBackgroundSettings(JSON.parse(savedSettings))
+        } catch (error) {
+          console.error("Failed to parse saved background settings:", error)
+        }
       }
     }
   }, [])
